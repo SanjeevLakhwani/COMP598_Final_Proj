@@ -1,11 +1,21 @@
+import datetime
+
 import tweepy as tp
 
 
 def main():
-    cl = tp.Client(bearer_token="AAAAAAAAAAAAAAAAAAAAAARUWAEAAAAA1pIyAuyOpmUQmDvugNdXuf0nYYI%3DnvCTS784Hq2ZFq06wZz8QprQA4B2fGhX7BdkhBgOpx0yYy5f4o")
+    cl = tp.Client(bearer_token="AAAAAAAAAAAAAAAAAAAAALNTWAEAAAAA99a%2B42EREAAKFnNFsaIc0mfb65c%3D824aYlAkcr50Yr3CsOiGbwO55VJg2KcRB9E0QdHAM4FQ8drMOV")
 
-    a = cl.search_recent_tweets(query="covid")
-    print(a)
+    options = {
+        "query": "covid",
+        "end_time": "2021-06-23T09:07:21-07:00",  # YYYY-MM-DDTHH:mm:ssZ
+        "max_results": 2,
+        # "next_token": "",
+        "start_time": "2021-07-23T09:07:21-07:00"
+    }
+
+    res = cl.search_all_tweets(query="covid")
+    print(res)
 
 
 if __name__ == '__main__':
