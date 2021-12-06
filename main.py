@@ -1,42 +1,40 @@
-import datetime
-
+import pprint
+import pandas as pd
+import argparse
+import tweepy
 import tweepy as tp
-import csv
-con_key = "qgVsLBKbmjFxDoodyWVX1k3dx"
-con_secret = "8z3y934Na5IgfO4u791kDrzQ45EPDSmJfCGB6AvYIwoqM2Pu3w"
-access_key = "1462918284601225216-E7VWlZvm2AJXOJAmg5HP94WdfNSjB4"
-access_secret = "tvs1Phv1Bg4bKugrhDclZprbLvpaJBDHIo37NVBIl8hLc"
+import os
+from dotenv import load_dotenv
 
-def get_tweets(api):
-    search_words = ["covid", 'vaccine']
-    
-    tweets = tp.Cursor(api.search_tweets,
-                    q=search_words,
-                    lang="en",
-                    tweet_mode='extended').items(10)
-    tweet_text = []
-    for tweet in tweets:
-        # print(dir(tweet))
-        if 'retweeted_status' in dir(tweet):
-            tweet_text.append([tweet.retweeted_status.full_text,tweet.created_at])
-        else:
-            tweet_text.append([tweet.full_text,tweet.created_at])
-    #tweet_text = [tweet.full_text for tweet in tweets]
-    with open("tweets.csv", 'w', encoding='utf8') as fp:
-        tweet_writer = csv.writer(fp)
-        tweet_writer.writerow(["Tweet Text","Date"])
-        for line in tweet_text:
-            tweet_writer.writerow(line)
+load_dotenv()
 
+
+def authorize_v2():
+    api = tp.Client(bearer_token=os.environ.get("bearer_token"),
+                    consumer_key=os.environ.get("consumer_key"), consumer_secret=os.environ.get("consumer_secret"),
+                    access_token=os.environ.get("access_token"),
+                    access_token_secret=os.environ.get("access_token_secret"))
+    return api
+
+
+def get_tweets_v2(api):
+    query = "((covid or #covid) OR (vaccination OR #vaccination OR vaccine OR #vaccine) OR pfizer OR moderna or " \
+            "astrazeneca) -is:retweet lang:en "
+    date1 = "2021-07-09T12:22:09.1440844-07:00"
+    date2 = "2021-01-09T12:22:09.1440844-07:00"
+    f = api.search_recent_tweets(query=query,max_results=10, end_time=date1,start_time=date2)
+    # start time can be up to 7 days ago
+    # end time should be 3 days after start time
+    # max_results up to 100, call it 10 times?
+    # f = api.search_recent_tweets(query=query, max_results=10)
+    for tweet in f[0]:
+        print(tweet)
+        print("========================================================================================")
 
 
 def main():
-    auth = tp.OAuthHandler(con_key,con_secret)
-    auth.set_access_token(access_key,access_secret)
-    api = tp.API(auth, wait_on_rate_limit=True)
-    cl = tp.Client(bearer_token="AAAAAAAAAAAAAAAAAAAAAARUWAEAAAAA1pIyAuyOpmUQmDvugNdXuf0nYYI%3DnvCTS784Hq2ZFq06wZz8QprQA4B2fGhX7BdkhBgOpx0yYy5f4o")
-    # a = cl.search_recent_tweets(query="covid")
-    get_tweets(api)
+    api = authorize_v2()
+    get_tweets_v2(api)
 
 
 if __name__ == '__main__':

@@ -16,11 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-o", default="output.csv")
 args = parser.parse_args()
 
+
 def authorize_v2():
     api = tp.Client(bearer_token=os.environ.get("bearer_token"),
     consumer_key=os.environ.get("consumer_key"), consumer_secret=os.environ.get("consumer_secret"),
     access_token=os.environ.get("access_token"),access_token_secret=os.environ.get("access_token_secret"))
     return api
+
 
 def get_tweets_v2(api):
     query = "((covid or #covid) OR (vaccination OR #vaccination OR vaccine OR #vaccine) OR pfizer OR moderna or astrazeneca) -is:retweet lang:en "
