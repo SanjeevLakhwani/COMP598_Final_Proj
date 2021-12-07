@@ -1,11 +1,10 @@
-import pprint
 import pandas as pd
 import argparse
-import tweepy
 import tweepy as tp
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
 
@@ -15,10 +14,12 @@ args = parser.parse_args()
 
 df = pd.DataFrame()
 
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+
 
 def authorize():
     api = tp.Client(bearer_token=os.environ.get("bearer_token"))
-    print("Authenticated")
+    logging.info("Authenticated")
     return api
 
 
@@ -26,7 +27,7 @@ def init_df():
     global df
     data = {"id": [], "text": [], "topic": [], "emotion": []}
     df = pd.DataFrame(data)
-    df = df.astype({"id": int, "text": str, "topic": str, "emotion": str})
+    df = df.astype({"id": str, "text": str, "topic": str, "emotion": str})
 
 
 def add_data(data):
@@ -40,11 +41,11 @@ def add_data(data):
     return df.shape[0]
 
 
-def collect_data(api, min_tweet_count):
-    print("Collecting data...")
-    query = "((covid or #covid) OR (vaccination OR #vaccination OR vaccine OR #vaccine) OR pfizer OR moderna or " \
-            "astrazeneca) -is:retweet lang:en "
-    max_tweets = 100
+def collect_data(api, min_tweet_count, step_size):
+    logging.info("Collecting data...")
+    query = "(((covid OR #covid) (vaccination OR #vaccination OR vaccine OR #vaccine)) OR pfizer OR moderna or " \
+            "astrazeneca) -is:retweet lang:en"
+    max_tweets = step_size
     next_token = None
     start_time = datetime.fromisoformat("2021-12-03")
     end_time = start_time + timedelta(3)
@@ -59,20 +60,21 @@ def collect_data(api, min_tweet_count):
                                        next_token=next_token)
         t_count = add_data(res.data)
         next_token = res.meta["next_token"]
-        print(f"Collected {t_count} tweets")
-    print("Data Collected")
+        logging.info(f"Collected {t_count} tweets")
+    logging.info("Data Collected")
 
 
 def save_data(file_name):
     global df
-    print("Saving Data")
-    df.to_csv(file_name)
-    print("Data Saved")
+    logging.info("Saving Data")
+    df.to_csv(file_name, index=False)
+    logging.info("Data Saved")
+
 
 def main():
     api = authorize()
-    collect_data(api, 1200)
-    save_data("tweets5.csv")
+    collect_data(api, 1200, 100)
+    save_data("tweets2.csv")
 
 
 if __name__ == '__main__':
