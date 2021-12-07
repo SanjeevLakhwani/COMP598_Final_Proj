@@ -9,12 +9,18 @@ import logging
 load_dotenv()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-o", default="output.csv")
+parser.add_argument("-o", default="tweets2.csv", type=str)
+parser.add_argument("--verbose", default=True, type=bool)
+parser.add_argument("--tweet_count", default=1200, type=int)
+parser.add_argument("--step_size", default=100, type=int)
 args = parser.parse_args()
 
 df = pd.DataFrame()
 
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+if args.verbose:
+    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
+else:
+    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.CRITICAL)
 
 
 def authorize():
@@ -72,9 +78,12 @@ def save_data(file_name):
 
 
 def main():
+    output_file = args.o
+    min_tweet_count = args.tweet_count
+    step_size = args.step_size
     api = authorize()
-    collect_data(api, 1200, 100)
-    save_data("tweets2.csv")
+    collect_data(api, min_tweet_count, step_size)
+    save_data(args.o)
 
 
 if __name__ == '__main__':
